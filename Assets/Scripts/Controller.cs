@@ -52,11 +52,61 @@ public class Controller : MonoBehaviour
         int[,] matriu = new int[Constants.NumTiles, Constants.NumTiles];
 
         //TODO: Inicializar matriz a 0's
-
+        for(int i=0; i < Constants.NumTiles; i++)
+        {
+            for (int j = 0; j < Constants.NumTiles; j++)
+            {
+                matriu[i, j] = 0;
+            }
+        }
         //TODO: Para cada posición, rellenar con 1's las casillas adyacentes (arriba, abajo, izquierda y derecha)
-
+        int contador = 0;
+        for (int t = 0; t < Constants.NumTiles; t++)
+        {
+            
+                //Casilla izquierda
+                //comprobamos si la casilla que miramos no esta en el borde izquierdo
+                if (contador % 8 != 0)
+                {
+                    matriu[contador, contador - 1] = 1;
+                }
+                //Casilla derecha
+                //comprobamos si la casilla que miramos no esta en el borde derecho
+                if ((contador + 1) % 8 != 0)
+                {
+                    matriu[contador, contador + 1] = 1;
+                }
+                //Casilla superior
+                //Comprobamos que la casilla que miramos no esta en el borde superior
+                if (contador > 7)
+                {
+                    matriu[contador, contador - 8] = 1;
+                }
+                //Casilla inferior
+                //comprobamos que la casilla que miramos no esta en el borde inferior
+                if (contador < 56)
+                {
+                    matriu[contador, contador + 8] = 1;
+                }
+            
+            contador++;
+        }
         //TODO: Rellenar la lista "adjacency" de cada casilla con los índices de sus casillas adyacentes
+        int tilenum = 0;
+        for(int m=0; m< Constants.NumTiles; m++)
+        {
+            tilenum = tiles[m].GetComponent<Tile>().numTile;
+            List<int> adjacency = new List<int>();
 
+            for(int z=0; z< Constants.NumTiles; z++)
+            {
+                if (matriu[m, z] == 1)
+                {
+                    adjacency.Add(z);
+                }
+            }
+            tiles[m].GetComponent<Tile>().adjacency = adjacency;
+        }
     }
 
     //Reseteamos cada casilla: color, padre, distancia y visitada
@@ -212,12 +262,4 @@ public class Controller : MonoBehaviour
 
     }
     
-   
-    
-
-    
-
-   
-
-       
 }
