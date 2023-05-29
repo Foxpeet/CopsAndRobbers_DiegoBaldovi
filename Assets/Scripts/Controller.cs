@@ -254,12 +254,42 @@ public class Controller : MonoBehaviour
 
         //TODO: Implementar BFS. Los nodos seleccionables los ponemos como selectable=true
         //Tendrás que cambiar este código por el BFS
-        for(int i = 0; i < Constants.NumTiles; i++)
+        /*for(int i = 0; i < Constants.NumTiles; i++)
         {
             tiles[i].selectable = true;
+        }*/
+        Queue<Tile> newNodes = new Queue<Tile>();
+        //añadimos los que estan a distancia 1 sin contar las casillas en las que haya un cop
+        for (int z=0; z< tiles[indexcurrentTile].adjacency.Count; z++)
+        {
+            if(cops[0].GetComponent<CopMove>().currentTile != tiles[indexcurrentTile].adjacency[z] && cops[1].GetComponent<CopMove>().currentTile != tiles[indexcurrentTile].adjacency[z])
+            {
+                nodes.Enqueue(tiles[tiles[indexcurrentTile].adjacency[z]]);
+                tiles[tiles[indexcurrentTile].adjacency[z]].selectable = true;
+            }
         }
 
-
+        //añadimos los que esten a distancia 1 de los obtenidos anteriormente (distancia 2 del origen) sin contar en las que haya un cop
+        
+        foreach(Tile tile in nodes)
+        {
+            for (int k = 0; k < tiles[tile.numTile].adjacency.Count; k++)
+            {
+                if (cops[0].GetComponent<CopMove>().currentTile != tiles[tile.numTile].adjacency[k] && cops[1].GetComponent<CopMove>().currentTile != tiles[tile.numTile].adjacency[k])
+                {
+                    if (tiles[tile.numTile].adjacency[k] != indexcurrentTile)
+                    {
+                        newNodes.Enqueue(tiles[tiles[tile.numTile].adjacency[k]]);
+                        tiles[tiles[tile.numTile].adjacency[k]].selectable = true;
+                    }
+                }
+            }
+        }
+        for(int i = 0; i < newNodes.Count; i++)
+        {
+            Tile tile = newNodes.Dequeue();
+            nodes.Enqueue(tile);
+        }
     }
     
 }
