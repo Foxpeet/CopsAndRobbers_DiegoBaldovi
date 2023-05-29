@@ -188,13 +188,19 @@ public class Controller : MonoBehaviour
     {
         clickedTile = robber.GetComponent<RobberMove>().currentTile;
         tiles[clickedTile].current = true;
-        FindSelectableTiles(false);
+        Tile[] tileList = FindSelectableTiles(false);
+        Debug.Log(tileList.Length.ToString());
+        //TODO: Cambia el código de abajo para hacer lo siguiente
+        //- Elegimos una casilla aleatoria entre las seleccionables que puede ir el caco
+        int randomIndex = UnityEngine.Random.Range(0, tileList.Length);
+        int tileToMove = tileList[randomIndex].numTile;
 
-        /*TODO: Cambia el código de abajo para hacer lo siguiente
-        - Elegimos una casilla aleatoria entre las seleccionables que puede ir el caco
-        - Movemos al caco a esa casilla
-        - Actualizamos la variable currentTile del caco a la nueva casilla
-        */
+        //- Actualizamos la variable currentTile del caco a la nueva casilla
+        tiles[clickedTile].current = false;
+        tiles[tileToMove].current = true;
+        robber.GetComponent<RobberMove>().currentTile = tileToMove;
+
+        //- Movemos al caco a esa casilla
         robber.GetComponent<RobberMove>().MoveToTile(tiles[robber.GetComponent<RobberMove>().currentTile]);
     }
 
@@ -236,7 +242,7 @@ public class Controller : MonoBehaviour
         rounds.text = "Rounds: " + roundCount;
     }
 
-    public void FindSelectableTiles(bool cop)
+    public Tile[] FindSelectableTiles(bool cop)
     {
                  
         int indexcurrentTile;        
@@ -258,9 +264,9 @@ public class Controller : MonoBehaviour
         {
             tiles[i].selectable = true;
         }*/
-        Queue<Tile> newNodes = new Queue<Tile>();
+
         //añadimos los que estan a distancia 1 sin contar las casillas en las que haya un cop
-        for (int z=0; z< tiles[indexcurrentTile].adjacency.Count; z++)
+        for(int z=0; z< tiles[indexcurrentTile].adjacency.Count; z++)
         {
             if(cops[0].GetComponent<CopMove>().currentTile != tiles[indexcurrentTile].adjacency[z] && cops[1].GetComponent<CopMove>().currentTile != tiles[indexcurrentTile].adjacency[z])
             {
@@ -268,28 +274,31 @@ public class Controller : MonoBehaviour
                 tiles[tiles[indexcurrentTile].adjacency[z]].selectable = true;
             }
         }
-
         //añadimos los que esten a distancia 1 de los obtenidos anteriormente (distancia 2 del origen) sin contar en las que haya un cop
-        
-        foreach(Tile tile in nodes)
+        Queue<Tile> newNodes = new Queue<Tile>();
+        foreach (Tile tile in nodes)
         {
             for (int k = 0; k < tiles[tile.numTile].adjacency.Count; k++)
             {
                 if (cops[0].GetComponent<CopMove>().currentTile != tiles[tile.numTile].adjacency[k] && cops[1].GetComponent<CopMove>().currentTile != tiles[tile.numTile].adjacency[k])
                 {
-                    if (tiles[tile.numTile].adjacency[k] != indexcurrentTile)
+                    if (tiles[tile.numTile].adjacency[k] != indexcurrentTile) // & !nodes.Contains(tiles[k])
                     {
                         newNodes.Enqueue(tiles[tiles[tile.numTile].adjacency[k]]);
                         tiles[tiles[tile.numTile].adjacency[k]].selectable = true;
                     }
+
                 }
             }
         }
-        for(int i = 0; i < newNodes.Count; i++)
+        for (int i = 0; i < newNodes.Count; i++)
         {
             Tile tile = newNodes.Dequeue();
             nodes.Enqueue(tile);
         }
+        Tile[] List = new Tile[nodes.Count];
+        nodes.CopyTo(List, 0);
+        return List;
     }
     
 }
