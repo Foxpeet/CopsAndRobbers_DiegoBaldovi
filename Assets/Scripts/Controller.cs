@@ -60,6 +60,7 @@ public class Controller : MonoBehaviour
             }
         }
         //TODO: Para cada posición, rellenar con 1's las casillas adyacentes (arriba, abajo, izquierda y derecha)
+        // el contador indica el numero/indice de la casilla que estamos comprobando
         int contador = 0;
         for (int t = 0; t < Constants.NumTiles; t++)
         {
@@ -92,12 +93,13 @@ public class Controller : MonoBehaviour
             contador++;
         }
         //TODO: Rellenar la lista "adjacency" de cada casilla con los índices de sus casillas adyacentes
-        int tilenum = 0;
+        
+        //para cada casilla
         for(int m=0; m< Constants.NumTiles; m++)
         {
-            tilenum = tiles[m].GetComponent<Tile>().numTile;
             List<int> adjacency = new List<int>();
 
+            //si segun la matriz 'matriu' estan conectadas (hay un 1) se añade esa casilla a la lista adjacency correspondiente que se le dará a cada casilla
             for(int z=0; z< Constants.NumTiles; z++)
             {
                 if (matriu[m, z] == 1)
@@ -105,6 +107,7 @@ public class Controller : MonoBehaviour
                     adjacency.Add(z);
                 }
             }
+            //la lista adjacency terminada de esa casilla, se la asignamos
             tiles[m].GetComponent<Tile>().adjacency = adjacency;
         }
     }
@@ -188,12 +191,14 @@ public class Controller : MonoBehaviour
     {
         clickedTile = robber.GetComponent<RobberMove>().currentTile;
         tiles[clickedTile].current = true;
+
+        //obtenemos la lista de casillas a las que puede ir por el BFS
         Tile[] tileList = FindSelectableTiles(false);
-        Debug.Log(tileList.Length.ToString());
+
         //TODO: Cambia el código de abajo para hacer lo siguiente
         //- Elegimos una casilla aleatoria entre las seleccionables que puede ir el caco
         int randomIndex = UnityEngine.Random.Range(0, tileList.Length);
-        int tileToMove = tileList[randomIndex].numTile;
+        int tileToMove = tileList[randomIndex].numTile; //el indice de la casilla que ha salido aleatoriamente
 
         //- Actualizamos la variable currentTile del caco a la nueva casilla
         tiles[clickedTile].current = false;
@@ -268,6 +273,7 @@ public class Controller : MonoBehaviour
         //añadimos los que estan a distancia 1 sin contar las casillas en las que haya un cop
         for(int z=0; z< tiles[indexcurrentTile].adjacency.Count; z++)
         {
+            //si en esa casilla esta el cop 1 o el 2, no añadimos la casilla a la cola
             if(cops[0].GetComponent<CopMove>().currentTile != tiles[indexcurrentTile].adjacency[z] && cops[1].GetComponent<CopMove>().currentTile != tiles[indexcurrentTile].adjacency[z])
             {
                 nodes.Enqueue(tiles[tiles[indexcurrentTile].adjacency[z]]);
@@ -275,13 +281,17 @@ public class Controller : MonoBehaviour
             }
         }
         //añadimos los que esten a distancia 1 de los obtenidos anteriormente (distancia 2 del origen) sin contar en las que haya un cop
+        //creamos una cola auxiliar para no provocar un error en el foreach de la primera queue al añadir mas casillas
         Queue<Tile> newNodes = new Queue<Tile>();
         foreach (Tile tile in nodes)
         {
+            //comprobamos para cada casilla de la primera queue todos sus adjacentes y los añadimos a la queue auxiliar
             for (int k = 0; k < tiles[tile.numTile].adjacency.Count; k++)
             {
+                //si hay un cop en esa casilla no entramos al if y no la añadimos
                 if (cops[0].GetComponent<CopMove>().currentTile != tiles[tile.numTile].adjacency[k] && cops[1].GetComponent<CopMove>().currentTile != tiles[tile.numTile].adjacency[k])
                 {
+                    //si la casilla adyacente que miramos no es la de origen
                     if (tiles[tile.numTile].adjacency[k] != indexcurrentTile) // & !nodes.Contains(tiles[k])
                     {
                         newNodes.Enqueue(tiles[tiles[tile.numTile].adjacency[k]]);
@@ -291,11 +301,13 @@ public class Controller : MonoBehaviour
                 }
             }
         }
+        //un bucle para pasar todas las casillas de distancia 2 a la queue principal
         for (int i = 0; i < newNodes.Count; i++)
         {
             Tile tile = newNodes.Dequeue();
             nodes.Enqueue(tile);
         }
+        //pasamos la queue a una lista para devolversela al robber y sea mas facil mirar la casilla aleatoria
         Tile[] List = new Tile[nodes.Count];
         nodes.CopyTo(List, 0);
         return List;
